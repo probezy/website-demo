@@ -4,7 +4,7 @@
 
 ### 如何使用：
 
-1. 下载安装最新版golang (官网: https://golang.org/
+1. 下载安装最新版golang (官网: https://golang.org/ ）
 2. 克隆代码
 ```shell
    git clone https://github.com/probezy/website-demo.git
