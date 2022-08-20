@@ -1,10 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +23,15 @@ func home(w http.ResponseWriter, r *http.Request) {
 					<p>X-Forwarded-For: ` + XForwardedFor + `</p>
 					<p>X_Forwarded_Proto: ` + XForwardedProto + `</p>
 					<p>CODE:MAGIC8888</p>
+					<p>POST 提交表单测试</p>					
+					<form method="post" action="/login">
+    					<p>名字： <input type="text" name="username" value="xiaoMing" /></p>
+    					<p>密码： <input type="password" name="password"/></p>
+						<p>
+							<input type="submit">
+							<input type="reset">
+						</p>
+					</form>
 				</body>
 			</html>`
 	w.WriteHeader(200)
@@ -31,23 +40,35 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Fprintf(w, "hello\n")
+	fmt.Fprintf(w, "hello "+time.Now().String()+"\n")
+}
+
+// 结构体解析
+func postHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("method:", r.Method) // method: POST
+	//param := &struct {
+	//	Username string `json:"username"`
+	//}{}
+	fmt.Fprintln(w, r.FormValue("username"))
+	//只解析form 中的参数 FormValue enctype="application/x-www-form-urlencoded"
+	fmt.Fprintln(w, r.FormValue("password"))
+
+	// 通过json解析器解析参数
+	// &struct { Username string "json:\"username\"" }{Username:"xiaoming"}
+
+	w.Write([]byte("ok"))
 }
 
 func main() {
 
-	var httpAddr string
-
-	flag.StringVar(&httpAddr, "httpAddr", ":8888", "website address listen port")
-
-	flag.Parse()
-	flag.Usage()
-
 	http.Handle("/template/", http.StripPrefix("/template/", http.FileServer(http.Dir("./template"))))
 	http.HandleFunc("/", home)
 	http.HandleFunc("/hello", hello)
-	fmt.Printf("web start listen port %s \n", httpAddr)
-	err := http.ListenAndServe(httpAddr, nil) //设置监听的端口
+	http.HandleFunc("/login", postHandler)
+
+	err := http.ListenAndServe(":8888", nil) //设置监听的端口
+	//err := http.ListenAndServeTLS(":443", "/Users/michael/.acme.sh/myapp.cpolar.net/fullchain.cer", "/Users/michael/.acme.sh/myapp.cpolar.net/myapp.cpolar.net.key", nil)
+
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
